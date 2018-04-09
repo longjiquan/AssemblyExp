@@ -215,7 +215,7 @@ FUNCTION3_1:LEA DX,INPUT_GOODS_NAME_AGAIN
             JMP FUNCTION3
 
 FUNCTION3_3:
-            MOV BYTE PTR goods_name[SI+3],'$'
+            MOV BYTE PTR goods_name[SI+2],'$'
             mov si,goods_offset
 
             MOV AX,WORD PTR GA1[si+10];进货价
