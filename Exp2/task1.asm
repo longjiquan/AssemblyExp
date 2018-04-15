@@ -12,27 +12,27 @@ goods_name DB 11
           DB 11 DUP(0)
 APR DW 0
 AUTH DB 0
-COST1 DW 0;??
-PROFIT1 DW 0;??
-COST2 DW 0;??
-PROFIT2 DW 0;??
+COST1 DW 0;商品成本
+PROFIT1 DW 0;商品利润
+COST2 DW 0;商品成本
+PROFIT2 DW 0;商品利润
 cycle_times dw 1000
-BNAME DB 'LONG JQ',3 DUP(0);????
-BPASS DB 'NOPASS';??
+BNAME DB 'LONG JQ',3 DUP(0);老板姓名
+BPASS DB 'NOPASS';老板密码
 N EQU 30
 goods_offset dw 0
-SHOP1 DB 'SHOP1',0;?????0??
-ga1 DB 'PEN',7 DUP(0)
-    DW 35,56,2000,0,?
+SHOP1 DB 'SHOP1',0;商店1
+ga1 DB 'PEN',7 DUP(0);商品名称
+    DW 35,56,30000,0,?;进货价，售货价，进货数量，已售数量，利润率
 ga2 DB 'BOOK',6 DUP(0)
-    DW 12,30,2000,0,?
-gaN DB N-2 DUP('TEMP-VALUE',15,0,20,0,0d0H,7,0,0,?,?)
-SHOP2 DB 'SHOP2',0;?????0??
-gb1 DB 'PEN',7 DUP(0)
-    DW 35,50,2000,0,?
+    DW 12,30,30000,0,?
+  gaN DB N-2 DUP('TEMP-VALUE',15,0,20,0,30H,75H,0,0,?,?)
+SHOP2 DB 'SHOP2',0;商店2
+gb1 DB 'PEN',7 DUP(0);商品名称
+    DW 35,50,30000,0,?;进货价，售货价，进货数量，已售数量，利润率
 gb2 DB 'BOOK',6 DUP(0)
-    DW 12,28,2000,0,?
-gbN DB N-2 DUP('TEMP-VALUE',15,0,20,0,0d0H,7,0,0,?,?)
+    DW 12,28,30000,0,?
+gbN DB N-2 DUP('TEMP-VALUE',15,0,20,0,30H,75H,0,0,?,?)
 INPUT_NAME_MSG DB 0AH,0DH,'please input name(input q/Q to exit):$'
 INPUT_PASS_MSG DB 0AH,0DH,'please input password:$'
 LOGIN_FAILED_MSG DB 0AH,0DH,'Login failed! Please check the name or the password!$'
@@ -67,7 +67,7 @@ FUNCION1:
             INC SI
             DEC CX
             JNZ SET_PWD_ALL_ZERO
-            
+
             MOV SI,0
             MOV CX,10
 
@@ -114,7 +114,7 @@ FUNCTION2_PWD:
             INC SI
             DEC CX
             JNZ FUNCTION2_PWD
-            
+
             MOV SI,0
             MOV CX,10
 
@@ -150,8 +150,7 @@ PRINT_LOGIN_FAILED:
             MOV AH,9
             INT 21H
             JMP FUNCION1
-;???????1?2????
-;???????3????
+;开始循环
 START_CYCLES:
 mov cx,10
 mov si,0
@@ -160,7 +159,7 @@ reset_goodsname:
     inc si
     dec cx
     jnz reset_goodsname
-    
+
 LEA DX,INPUT_GOODS_NAME_MSG
 MOV AH,9
 INT 21H
@@ -181,8 +180,7 @@ mov word ptr gb1[si+16],0
 dec cx
 jnz SET_SOLD_NUM_ZERO
 
-mov cx,word ptr ga1[14];????
-mov cycle_times,cx
+mov cycle_times,30000
 mov ax,0
 call TIMER
 FUNCTION3:
@@ -191,7 +189,7 @@ is_goods_cycle:
             mov cx,10
             mov si,0
             mov bx,goods_offset
-            
+
 is_goods_cmp:
             mov al,ga1[bx+si]
             cmp al,goods_name[si+2]
@@ -199,28 +197,32 @@ is_goods_cmp:
             inc si
             dec cx
             jnz is_goods_cmp
-            
+
             mov goods_name[bx+si+2],'$'
             mov ax,word ptr ga1[bx+14]
             cmp ax,word ptr ga1[bx+16]
             jle GOODS_SOLD_OUT
             add word ptr ga1[si+16],1
-            
+            mov ax,word ptr gb1[bx+14]
+            cmp ax,word ptr gb1[bx+16]
+            jle GOODS_SOLD_OUT
+            add word ptr gb1[si+16],1
+
 CALCULATE_PR:
             MOV AX,WORD PTR ga1[bx+10];???
-            IMUL ga1[bx+14];AX??cost1
+            IMUL ga1[bx+14];AX=cost1
             MOV COST1,AX
             MOV AX,WORD PTR ga1[bx+12];???
             IMUL ga1[bx+16]
-            SUB AX,COST1;AX??profit1
+            SUB AX,COST1;AX=profit1
             MOV PROFIT1,AX
 
             MOV AX,WORD PTR gb1[bx+10];???
-            IMUL gb1[bx+14];AX??cost2
+            IMUL gb1[bx+14];AX=cost2
             MOV COST2,AX
             MOV AX,WORD PTR gb1[bx+12];???
             IMUL gb1[bx+16]
-            SUB AX,COST2;AX??profit2
+            SUB AX,COST2;AX=profit2
             MOV PROFIT2,AX
 
             mov dx,0
@@ -228,21 +230,21 @@ CALCULATE_PR:
             IMUL AX,WORD PTR 10
             cwd
             IDIV COST1
-            mov word ptr ga1[bx+18],ax;?????
+            mov word ptr ga1[bx+18],ax;将利润率存入内存
             mov dx,0
             MOV AX,PROFIT2
             IMUL AX,WORD PTR 10
             cwd
             IDIV COST2
-            mov word ptr ga2[bx+18],ax;?????
-            
+            mov word ptr ga2[bx+18],ax;将利润率存入内存
+
 next_goods:
             add goods_offset,20
             cmp goods_offset,600
             jne is_goods_cycle
 
             sub cycle_times,1
-            jnz FUNCTION3;FUNCTION3????
+            jnz FUNCTION3;FUNCTION3循环继续
 mov ax,1
 call TIMER
             jmp FUNCION1
@@ -259,14 +261,14 @@ EXIT:
             MOV AH,4CH
             INT 21H
 
-            ;?????(ms),?????????????(ms)
-            ;????:
-            ;      MOV  AX, 0   ;??????
-            ;      CALL TIMER
-            ;      ... ...  ;???????
-            ;      MOV  AX, 1
-            ;      CALL TIMER   ;???????????(ms)
-            ;??: ???AX??????
+            ;时间计数器(ms),在屏幕上显示程序的执行时间(ms)
+			;使用方法:
+			;	   MOV  AX, 0	;表示开始计时
+			;	   CALL TIMER
+			;	   ... ...	;需要计时的程序
+			;	   MOV  AX, 1	
+			;	   CALL TIMER	;终止计时并显示计时结果(ms)
+			;输出: 改变了AX和状态寄存器
             TIMER   PROC
                 PUSH  DX
                 PUSH  CX
