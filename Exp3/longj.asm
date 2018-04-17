@@ -1,4 +1,5 @@
     name longjiquan
+    ;公共数据
     public goodsName,shopName
     public APR,COST1,PROFIT1,COST2,PROFIT2
     public ga1,ga2,gaN,gb1,gb2,gbN
