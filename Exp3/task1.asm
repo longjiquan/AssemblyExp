@@ -1,5 +1,6 @@
 .386
 ;使用寄存器dx,ax
+;功能:将以oprd为首址的字符串输出
 print macro oprd
     push dx
     push ax
@@ -10,6 +11,7 @@ print macro oprd
     pop dx
 endm
 ;使用寄存器bx,dx,ax
+;功能：输入一串字符串到oprd中
 scan macro oprd
     push bx
     push dx
@@ -26,11 +28,13 @@ scan macro oprd
     pop bx
 endm
 ;使用寄存器ax
+;从屏幕读取一个字符到al中
 Getchar macro
     mov ah,1
     int 21H
 endm
 ;使用寄存器dx，ax
+;将字符char输出到屏幕
 Putchar macro char
     push dx
     push ax
@@ -41,6 +45,7 @@ Putchar macro char
     pop dx
 endm
 ;使用寄存器dx,ax,si
+;将数字num转化为字符串并输出
 printNumString macro num
     push dx
     push ax
@@ -54,6 +59,7 @@ printNumString macro num
     pop dx
 endm
 ;使用寄存器bx
+;功能：输出以0结尾而不以$结尾的字符串
 outString macro oprd1
     push bx
     mov bx,offset oprd1
@@ -65,12 +71,14 @@ endm
 ;oprd3=偏移量，10=进货价，12=售货价，14=进货总数，16=已售数量,18=利润率
 ;oprd4=numString，存储数字字串的地址
 ;使用寄存器si
+;功能：输出商品的某个字段，如售货价
 printGoodsPartInfo macro oprd1,oprd2,oprd3
     push si
     mov si,oprd1
     printNumString oprd2[si+oprd3]
     pop si
 endm
+;功能：输出商品的全部信息
 printGoodsAllInfo macro opd1,opd2
     outString goodsBuyingPriceMsg
     printGoodsPartInfo opd1,opd2,10;进货价
@@ -81,6 +89,7 @@ printGoodsAllInfo macro opd1,opd2
     outString goodsSoldNumMsg
     printGoodsPartInfo opd1,opd2,16;已售数量
 endm
+;功能：改变商品某个字段，如售货价
 changeGoods macro msg,offsetNum,labelSelf,labelOther
     push si
     push bx
@@ -117,7 +126,7 @@ changeGoods macro msg,offsetNum,labelSelf,labelOther
     pop bx
     pop si
 endm
-
+;输出商店信息
 printShop macro oprd1,oprd2
     outString shopNameMsg
     outString oprd1
@@ -133,7 +142,7 @@ printShop macro oprd1,oprd2
     outString goodsSoldNumMsg
     printGoodsPartInfo goodsOffset,oprd2,16
 endm
-
+;删除字符串中的换行符
 removeEnter macro string
     mov si,word ptr string[1]
     and si,00FFH
@@ -325,7 +334,7 @@ function3_1_menu:;显示菜单
     .else
         jmp authFailMenu
     .endif
-authMenu:
+authMenu:;已登陆
     print authMenuMsg
     print menuReminderMsg
     Getchar
@@ -349,7 +358,7 @@ authMenu:
         print errorInputMsg
     .endif
     jmp function3
-authFailMenu:
+authFailMenu:;未登录
     print authFailMenuMsg
     print menuReminderMsg
     Getchar
@@ -372,9 +381,13 @@ function3_2_query proc;查询商品
     print INPUT_goodsName_MSG
     scan goodsName
     call setGoodsNameShop1
-    call is_goods_in_shop
-    mov ax,goodsOffset
-    .if ax==1
+    call is_goods_in_shop;判断是否在商店中
+    mov si,goodsOffset
+    mov bx,shopOffset
+    .if si==1||bx==1
+        jmp query_ret
+    .elseif bx==600
+        print errorInputMsg
         jmp query_ret
     .endif
     printShop SHOP1,ga1
@@ -400,6 +413,9 @@ function3_3_change proc;修改商品信息
     mov si,goodsOffset
     mov bx,shopOffset
     .if si==1||bx==1
+        jmp change_ret
+    .elseif si==600||bx==1212
+        print errorInputMsg
         jmp change_ret
     .endif
 change_buying_price:
