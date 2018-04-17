@@ -1,4 +1,5 @@
     name songjingwen
+    ;队友模块
     extrn goodsName:BYTE,shopName:BYTE
     extrn apr:WORD,COST1:word,PROFIT1:word,COST2:word,PROFIT2:word
     extrn ga1:byte,ga2:byte,gaN:byte,gb1:byte,gb2:byte,gbN:byte
