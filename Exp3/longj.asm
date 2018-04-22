@@ -475,18 +475,27 @@ function3_6_output proc
     outString goodsAprMsg
     printGoodsPartInfo 0,gbN,18;利润率
 function3_6_output endp
-
+;子程序名称：exit 
+;功能：输出退出提示信息，将控制权交由操作系统
+;参数：END_MSG指向提示字符串
+;返回：无
+;作者：boyjqlong@foxmail.com
 exit proc
-    push dx
-    push ax
     print END_MSG
     Getchar
-            MOV AH,4CH
-            INT 21H
-    pop ax
-    pop dx
+	MOV AH,4CH
+	INT 21H
 exit endp
-
+;子程序名称：is_goods_in_shop 
+;功能：判断某商品是否是商店里的商品
+;参数：goodsName,shopName分别为
+;		商品名和商店名
+;返回：goodsOffset和shopOffset
+;		goodsName为空，goodsOffset=1，shopName为空，shopOffset=1
+;		商品名不匹配，shopOffset=1212
+;		商店名不匹配，goodsOffset=600
+;		成功匹配，shop Offset和goodsOffset分别对应商店和商品的偏移量
+;作者：boyjqlong@foxmail.com
 is_goods_in_shop proc
     push cx
     push si
@@ -545,23 +554,26 @@ exit_query:
     pop cx
     ret
 is_goods_in_shop endp
-
+;子程序名称：showStr 
+;功能：输出以0结尾而不以$结尾的字符串
+;参数：ds:bx指向待显示字符串首地址
+;返回：无
+;作者：boyjqlong@foxmail.com
 showStr proc
     push dx
     push si
     push ax
-    push bx
     mov si,0
 showChar:
     mov dl,[bx+si]
     cmp dl,0
     je showStr_return
+	;该功能可用宏Putchar代替
     mov ah,2
     int 21H
     inc si
     jmp showChar
 showStr_return:
-    pop bx
     pop ax
     pop si
     pop dx
@@ -588,11 +600,16 @@ setGoodsNameShop1 proc
     pop ax
     pop si
 setGoodsNameShop1 endp
-
+;子程序名称：atoi 
+;功能：将数字字符串转化为数值存储到word型内存单元
+;参数：ds:bx指向数字字符串首地址，
+;		ds:si指向存储word型数据
+;返回：无
+;注意事项：该子程序无容错性，
+;		即对错误输入和溢出输入以及正负符号无处理能力
+;作者：boyjqlong@foxmail.com
 atoi proc
     push ax
-    push bx
-    push si
     push dx
     push di
     mov di,0;
@@ -612,12 +629,20 @@ atoi_core:
 atoi_ret:
     pop di
     pop dx
-    pop si
-    pop bx
     pop ax
     ret
 atoi endp
-
+;子程序名称：radix
+;功能：将EAX中的无符号二进制数
+;转换为P进制数
+;参数：
+;EAX--存放带转换的无符号二进制数
+;EBX--存放要转换数制的基数
+;SI--存放转换后的P进制ASCII码数字串的字节缓冲区首址
+;返回：
+;所求P进制ASCII码数字串按高位在前、地位在后的顺序存放在以SI为指针的字节缓冲区中
+;SI--指向字节缓冲区中最后一个ASCII码的下一个字符处
+;作者：来自华工80x86汇编语言程序设计课本136页
 radix proc
     push cx
     push edx
@@ -643,7 +668,16 @@ radix_l1:
     pop CX
     ret
 radix endp
-
+;子程序名称：f2t10 
+;功能：将ax/eax中的有符号二进制数以十进制形式在显示器上输出
+;参数：
+;ax/eax--存放待转换的有符号二进制数
+;dx--存放32位有符号二进制数的标志，
+;dx=16为16位对应ax，dx=32为32位对应eax
+;返回：
+;转换后的带符号十进制数在显示器上输出
+;调用子程序：radix
+;作者：来自华工80x86汇编语言程序设计课本141页
 f2t10 proc far
     push ebx
     push si
@@ -668,7 +702,17 @@ f2t10_plus:
     pop ebx
     ret
 f2t10 endp
-
+;子程序名称：f10t2 
+;功能：将以si位置真的字节存储区中的有符号十进制数字串转换成二进制数送入ax/eax之中
+;参数：
+;si--指向待转换的有符号十进制数字串存储区首址
+;dx--转换为16位或者32位二进制数标志
+;dx=16对应转换为16位送入ax，dx=32对应转换为32送入eax
+;cx--存放待转换十进制数字串的长度
+;返回：
+;si,si=-1代表溢出或者数字串有非法字符
+;eax/ax存放转换后的二进制数
+;作者：来自华工80x86汇编语言程序设计课本146页
 f10t2 proc
     push ebx
     mov eax,0
@@ -715,11 +759,15 @@ f10t2_err:
     mov si,-1
     jmp f10t2_qq
 f10t2 endp
-
+;子程序名称：setStringZero
+;功能：将以ds:bx为指针的字符串内容清零
+;参数：ds:bx指向字符串首地址，
+;返回：无
+;注意事项：字符串以0结尾
+;作者：boyjqlong@foxmail.com
 setStringZero proc
     push dx
     push ax
-    push bx
     push si
     mov si,0
 setStringZero_core:
@@ -731,7 +779,6 @@ setStringZero_core:
     jmp setStringZero_core
 setStringZero_ret:
     pop si
-    pop bx
     pop ax
     pop dx
     ret
