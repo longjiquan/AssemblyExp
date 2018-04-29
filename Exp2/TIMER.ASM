@@ -1,12 +1,12 @@
 
-;ʱ�������(ms),����Ļ����ʾ�����ִ��ʱ��(ms)
-;ʹ�÷���:
-;	   MOV  AX, 0	;��ʾ��ʼ��ʱ
+;时间计数器(ms),在屏幕上显示程序的执行时间(ms)
+;使用方法:
+;	   MOV  AX, 0	;表示开始计时
 ;	   CALL TIMER
-;	   ... ...	;��Ҫ��ʱ�ĳ���
+;	   ... ...	;需要计时的程序
 ;	   MOV  AX, 1	
-;	   CALL TIMER	;��ֹ��ʱ����ʾ��ʱ���(ms)
-;���: �ı���AX��״̬�Ĵ���
+;	   CALL TIMER	;终止计时并显示计时结果(ms)
+;输出: 改变了AX和状态寄存器
 TIMER	PROC
 	PUSH  DX
 	PUSH  CX

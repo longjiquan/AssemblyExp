@@ -1,0 +1,427 @@
+.386
+;-------------------------------------------------------------------------
+DATA SEGMENT USE16
+BNAME DB 'SJW', 7 DUP(0) ;???? 
+BPASS DB '123456' ;?? 
+N EQU 30
+M EQU 500
+S1 DB 'SHOP1', 0
+GA1 DB 'PEN', 7 DUP(0)
+    DW 15, 16, 15000, 0, ?
+GA2 DB 'BOOK', 6 DUP(0)
+    DW 10, 12, 15000, 0, ?
+GAN DB 28 DUP('Temp-Value',15, 0, 20, 0, 0E8H, 03H, 0, 0, ?, ?)
+
+S2 DB 'SHOP2', 0
+GB1 DB 'BOOK', 6 DUP(0)
+    DW 12, 28, 20, 15, ?
+GB2 DB 'PEN', 7 DUP(0)
+    DW 35, 50, 30, 24, ?
+GBN DB N-2 DUP('Temp-Value',15, 0, 20, 0, 0E8H, 03H, 0, 0, ?, ?)
+in_name DB 11
+        DB ?
+        DB 10 DUP(0)
+in_pwd DB 7
+      DB ?
+      DB 7 DUP(0)
+in_goods DB 11
+      DB ?
+      DB 11 DUP(0)
+      
+PR1 DW 0
+PR2 DW 0
+PR3 DW 0
+PR4 DW 0
+PR5 DW 0
+PR6 DW 0
+APR DW 0
+AUTH DB 0
+
+OUT_NAME  DB 0AH, 0DH, 'Input your name:$'
+OUT_PASS  DB 0AH, 0DH, 'Input your password:$'
+OUT_GOODS DB 0AH, 0DH, 'Input goods name:$'
+OUT_CLASS DB 0AH, 0DH, 'Class: $'
+OUT_TIME DB 0AH, 0DH, 'Time: $'
+
+DATA ENDS
+;-------------------------------------------------------------------------
+STACK   SEGMENT   STACK
+    DB  200 DUP(0)
+STACK   ENDS
+;-------------------------------------------------------------------------
+CODE SEGMENT USE16
+    ASSUME CS:CODE, DS:DATA, SS:STACK
+    
+START:
+    MOV AX, DATA    
+    MOV DS, AX
+;??1 
+
+
+
+F1:
+    LEA DX, OUT_NAME
+    MOV AH, 9
+    INT 21H ;??9?DOS??????,???? 
+    
+    LEA DX, in_name
+    MOV AH, 10
+    INT 21H ;??10?DOS??????,??????????
+    
+    MOV SI, WORD PTR in_name[1]
+    AND SI, 00FFH
+    MOV AL, 0
+    MOV in_name[SI+2], AL ;?????
+    
+    CMP AL, in_name[3] ;????????0
+    JE CHARACTER_COMPARE
+    
+    LEA DX, OUT_PASS
+    MOV AH, 9
+    INT 21H ;??9?DOS??????,???? 
+    
+    LEA DX, in_pwd 
+    MOV AH, 10
+    INT 21H ;??10?DOS??????,??????????
+    
+    MOV SI, WORD PTR in_pwd[1]
+    AND SI, 00FFH
+    MOV AL, 0
+    MOV in_pwd[SI+2], AL ;?????
+    
+;??2
+F2:
+    MOV SI, 0
+    MOV CX, 10 ;SI?CX?????
+;????????   
+NAME_COMPARE:
+    MOV AL, in_name[SI+2]
+    CMP AL, BNAME[SI]
+    JNE F1 ;????????
+    
+    INC SI
+    DEC CX
+    JNZ NAME_COMPARE
+    
+    MOV SI, 0
+    MOV CX, 10 ;?????
+;????????   
+PASS_COMPARE:
+    MOV AL, in_pwd[SI+2]
+    CMP AL, BPASS[SI]
+    JNE F1 ;????????
+    
+    INC SI
+    DEC CX
+    MOV AL, 6
+    CMP SI, 6
+    JNZ PASS_COMPARE
+    MOV AUTH, 1
+    JMP F3
+;?????
+CHARACTER_COMPARE:
+    MOV AL, 71H
+    CMP AL, in_name[2]
+    JE EXIT
+    MOV AL, 0DH
+    CMP AL, in_name[2]
+    JE ENTER_COMPARE
+    JMP F1
+;???????
+ENTER_COMPARE:
+    MOV AUTH, 0
+    JMP F3
+   
+
+;??3
+F3:
+    LEA DX, OUT_GOODS
+    MOV AH, 9
+    INT 21H ;??9?DOS??????,???? 
+    
+    LEA DX, in_goods
+    MOV AH, 10
+    INT 21H ;??10?DOS??????,??????????
+    
+    MOV SI, WORD PTR in_goods[1]
+    AND SI, 00FFH
+    MOV in_goods[SI+2], 0 ;?????
+    
+    MOV  AX, 0   ;表示开始计时
+    CALL disptime
+    
+    MOV BX, 0
+    MOV AL, 0
+    CMP AL, in_goods[2]
+    JNE BOOK_COMPARE
+    JMP F1
+
+BOOK_COMPARE:;????
+    MOV SI, 0
+    MOV BX, 0
+    MOV CX, 4
+BOOK:
+    MOV AL, in_goods[SI+2]
+    CMP AL, GA2[SI]
+    JNE PEN_COMPARE
+    INC SI
+    DEC CX
+    JNZ BOOK
+PTR_BOOK:
+    MOV AX, WORD PTR GA2[16]
+    CMP AX, M
+    JG F1
+    MOV BYTE PTR in_goods[SI+3],'$'
+    MOV SI, 0
+    MOV AX, WORD PTR GA2[SI+10]
+    IMUL GA2[SI+14]
+    MOV PR3, AX
+    MOV AX, WORD PTR GA2[SI+12]
+    IMUL GA2[SI+16]
+    SUB AX, PR3
+    MOV PR4, AX
+    MOV AX, WORD PTR GB2[SI+10]
+    IMUL GB2[SI+14]
+    MOV PR5, AX
+    MOV AX, WORD PTR GB2[SI+12]
+    IMUL GB2[SI+16]
+    SUB AX, PR5
+    MOV PR6, AX
+    
+    MOV DX, 0
+    MOV AX, PR4
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR3
+    MOV AH, 0
+    MOV PR1, AX
+    MOV AX, PR6
+    MOV DX, 0
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR5
+    MOV AH, 0
+    MOV PR2, AX
+    ADD AX, PR2
+    
+    MOV APR, AX
+    CWD
+    MOV CX, 2
+    IDIV CX
+    MOV APR, AX ;?????
+    MOV WORD PTR GA2[18], AX
+    MOV AX, 1
+    ADD BX, AX
+    CMP BX, M
+    JE PTR_CACULATE
+    JMP PTR_BOOK
+    
+PEN_COMPARE:;????
+    MOV SI, 0
+    MOV BX, 0
+    MOV CX, 3
+PEN:
+    MOV AL, in_goods[SI+2]
+    CMP AL, GA1[SI]
+    JNE N_COMPARE
+    INC SI
+    DEC CX
+    JNZ PEN
+PTR_PEN:
+    MOV AX, WORD PTR GA1[16]
+    CMP AX, M
+    JG F1
+    MOV BYTE PTR in_goods[SI+3], '$'
+    MOV AX, WORD PTR GA1[10]
+    IMUL GA1[14]
+    MOV PR3, AX
+    MOV AX, WORD PTR GA1[12]
+    IMUL GA1[16]
+    SUB AX, PR3
+    MOV PR4, AX
+    MOV AX, WORD PTR GB1[10]
+    IMUL GB1[14]
+    MOV PR5, AX
+    MOV AX, WORD PTR GB1[12]
+    IMUL GB1[16]
+    SUB AX, PR5
+    MOV PR6, AX
+    
+    MOV DX, 0
+    MOV AX, PR4
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR3
+    MOV AH, 0
+    MOV PR1, AX
+    MOV AX, PR6
+    MOV DX, 0
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR5
+    MOV AH, 0
+    MOV PR2, AX
+    ADD AX, PR2
+    
+    MOV APR, AX
+    CWD
+    MOV CX,2
+    IDIV CX
+    MOV APR,AX;?????
+    MOV WORD PTR GA1[18], AX
+    MOV AX, 1
+    ADD BX, AX
+    CMP BX, M
+    JE PTR_CACULATE
+    JMP PTR_PEN
+PTR_CACULATE:
+    MOV BX, 0
+    MOV SI, 0
+PTR_N:
+    
+    MOV AX, WORD PTR GAN[SI+10]
+    IMUL GAN[SI+14]
+    MOV PR3, AX
+    MOV AX, WORD PTR GAN[SI+12]
+    IMUL GAN[SI+16]
+    SUB AX, PR3
+    MOV PR4, AX
+    MOV AX, WORD PTR GBN[SI+10]
+    IMUL GBN[SI+14]
+    MOV PR5, AX
+    MOV AX, WORD PTR GBN[SI+12]
+    IMUL GBN[SI+16]
+    SUB AX, PR5
+    MOV PR6, AX
+    
+    MOV DX, 0
+    MOV AX, PR4
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR3
+    MOV AH, 0
+    MOV PR1, AX
+    MOV AX, PR6
+    MOV DX, 0
+    IMUL AX, WORD PTR 10
+    CWD
+    IDIV PR5
+    MOV AH, 0
+    MOV PR2, AX
+    ADD AX, PR2
+    
+    MOV APR, AX
+    CWD
+    MOV CX,2
+    IDIV CX
+    MOV APR,AX;?????
+    MOV WORD PTR GAN[SI+18], AX
+    
+    MOV AX, 1
+    ADD BX, AX
+    CMP BX, M
+    JE N_COMPARE
+    JMP PTR_N
+
+N_COMPARE:
+    MOV AX, 540
+    CMP SI, AX
+    JE F4
+    MOV AX, 20
+    ADD SI, AX
+    MOV BX, 0
+    JMP PTR_N
+;??4
+F4:
+MOV  AX, 1   
+CALL disptime
+JMP F1
+A_CLASS:
+    CMP APR, 90
+    JNG B_CLASS
+    LEA DX, OUT_CLASS
+    MOV AH, 9
+    INT 21H
+    MOV AH, 02H
+    MOV DL, 41H
+    INT 21H
+    JMP F1
+B_CLASS:
+    CMP APR, 50
+    JNG C_CLASS
+    LEA DX, OUT_CLASS
+    MOV AH, 9
+    INT 21H
+    MOV AH, 02H
+    MOV DL, 42H
+    INT 21H
+    JMP F1
+C_CLASS:
+    CMP APR, 20
+    JNG D_CLASS
+    LEA DX, OUT_CLASS
+    MOV AH, 9
+    INT 21H
+    MOV AH, 02H
+    MOV DL, 43H
+    INT 21H
+    JMP F1
+D_CLASS:
+    CMP APR, 0
+    JNG F_CLASS
+    LEA DX, OUT_CLASS
+    MOV AH, 9
+    INT 21H
+    MOV AH, 02H
+    MOV DL, 44H
+    INT 21H
+    JMP F1
+F_CLASS:
+    LEA DX, OUT_CLASS
+    MOV AH, 9
+    INT 21H
+    MOV AH, 02H
+    MOV DL, 46H
+    INT 21H
+    JMP F1
+EXIT:
+    MOV AH,4CH
+    INT 21H ;????
+    
+disptime proc        ;???????????????55ms??(δ????ax?????)
+         local timestr[8]:byte     ;0,0,'"',0,0,0dh,0ah,'$'
+         LEA DX, OUT_TIME
+         MOV AH, 9
+         INT 21H
+         push cx
+         push dx         
+         push ds
+         push ss
+         pop  ds
+         mov  ah,2ch 
+         int  21h
+         xor  ax,ax
+         mov  al,dh
+         mov  cl,10
+         div  cl
+         add  ax,3030h
+         mov  word ptr timestr,ax
+         mov  timestr+2,'"'
+         xor  ax,ax
+         mov  al,dl
+         div  cl
+         add  ax,3030h
+         mov  word ptr timestr+3,ax
+         mov  word ptr timestr+5,0a0dh
+         mov  timestr+7,'$'    
+         lea  dx,timestr  
+         mov  ah,9
+         int  21h    
+         pop  ds 
+         pop  dx
+         pop  cx
+         ret
+disptime    endp
+
+CODE ENDS
+    END START

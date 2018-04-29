@@ -1,0 +1,24 @@
+#include "resource.h"
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+
+// Menu
+600 MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Exit",                       1010
+    END
+    POPUP "&Action"
+    BEGIN
+        MENUITEM "&Average",               1800
+        MENUITEM "&List",                   1801
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      1900
+    END
+END
+

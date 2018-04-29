@@ -20,7 +20,7 @@ cycle_times dw 1000
 BNAME DB 'LONG JQ',3 DUP(0);老板姓名
 BPASS DB 'NOPASS';老板密码
 N EQU 30
-goods_offset dw 0
+goodsOffset dw 0
 SHOP1 DB 'SHOP1',0;商店1
 ga1 DB 'PEN',7 DUP(0);商品名称
     DW 35,56,30000,0,?;进货价，售货价，进货数量，已售数量，利润率
@@ -184,11 +184,11 @@ mov cycle_times,30000
 mov ax,0
 call TIMER
 FUNCTION3:
-            mov goods_offset,0
+            mov goodsOffset,0
 is_goods_cycle:
             mov cx,10
             mov si,0
-            mov bx,goods_offset
+            mov bx,goodsOffset
 
 is_goods_cmp:
             mov al,ga1[bx+si]
@@ -239,8 +239,8 @@ CALCULATE_PR:
             mov word ptr ga2[bx+18],ax;将利润率存入内存
 
 next_goods:
-            add goods_offset,20
-            cmp goods_offset,600
+            add goodsOffset,20
+            cmp goodsOffset,600
             jne is_goods_cycle
 
             sub cycle_times,1

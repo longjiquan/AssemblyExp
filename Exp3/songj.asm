@@ -5,6 +5,7 @@
     extrn ga1:byte,ga2:byte,gaN:byte,gb1:byte,gb2:byte,gbN:byte
     public function3_4_count_apr
     public function3_5_apr_rank
+	
 .386
 DATA2 SEGMENT USE16 para public 'd2'
 PR1 dw 0

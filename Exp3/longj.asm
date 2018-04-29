@@ -26,7 +26,7 @@ scan macro oprd
     push ax
     mov bx,offset oprd
     add bx,2
-    call setStringZero;输入前清零
+    call SetStringZero;输入前清零
     lea dx,oprd
     mov ah,10
     int 21H
@@ -759,29 +759,29 @@ f10t2_err:
     mov si,-1
     jmp f10t2_qq
 f10t2 endp
-;子程序名称：setStringZero
+;子程序名称：SetStringZero
 ;功能：将以ds:bx为指针的字符串内容清零
 ;参数：ds:bx指向字符串首地址，
 ;返回：无
 ;注意事项：字符串以0结尾
 ;作者：boyjqlong@foxmail.com
-setStringZero proc
+SetStringZero proc
     push dx
     push ax
     push si
     mov si,0
-setStringZero_core:
+SetStringZero_core:
     mov dl,byte ptr [bx+si]
     cmp dl,0
-    je setStringZero_ret;等于0时跳出循环
+    je SetStringZero_ret;等于0时跳出循环
     mov byte ptr [bx+si],0
     inc si
-    jmp setStringZero_core
-setStringZero_ret:
+    jmp SetStringZero_core
+SetStringZero_ret:
     pop si
     pop ax
     pop dx
     ret
-setStringZero endp
+SetStringZero endp
 CODE ENDS
             END START
