@@ -22,20 +22,22 @@ case_change:;大小写转换
        PUSHF
        CALL DWORD PTR OLD_INT
 	   ;若想要完整的大小写转换，可以注释下一行
-	   jmp case_change_s_to_l;直接跳转
+	   jmp case_change_s_to_l;直接跳转小写变大写
        cmp al,'Z';大于Z为小写字母
        jg case_change_s_to_l
 case_change_l_to_s:;大写变小写
         cmp al,'A'
         jl case_change_QUIT
-        add al,20h;大小变大写
+		cmp al,’Z’
+		jg case_change_QUIT
+        add al,20h;大写变小写加20H
         jmp case_change_QUIT
 case_change_s_to_l:;小写变大写
         cmp al,'a'
         jl case_change_QUIT
         cmp al,'z'
         jg case_change_QUIT
-        sub al,20h;小写变大写
+        sub al,20h;小写变大写减20H
         jmp case_change_QUIT
 case_change_QUIT: 
         IRET
@@ -60,5 +62,4 @@ CODE   ENDS
 STACK  SEGMENT USE16 STACK
        DB 200 DUP(0)
 STACK  ENDS
-
 end START
