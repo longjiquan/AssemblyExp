@@ -209,33 +209,33 @@ is_goods_cmp:
             add word ptr gb1[si+16],1
 
 CALCULATE_PR:
-            MOV AX,WORD PTR ga1[bx+10];???
-            IMUL ga1[bx+14];AX=cost1
-            MOV COST1,AX
-            MOV AX,WORD PTR ga1[bx+12];???
-            IMUL ga1[bx+16]
-            SUB AX,COST1;AX=profit1
-            MOV PROFIT1,AX
+            mov ax,word ptr ga1[bx+10];???
+            imul ga1[bx+14];ax=cost1
+            mov cost1,ax
+            mov ax,word ptr ga1[bx+12];???
+            imul ga1[bx+16]
+            sub ax,cost1;ax=profit1
+            mov profit1,ax
 
-            MOV AX,WORD PTR gb1[bx+10];???
-            IMUL gb1[bx+14];AX=cost2
-            MOV COST2,AX
-            MOV AX,WORD PTR gb1[bx+12];???
-            IMUL gb1[bx+16]
-            SUB AX,COST2;AX=profit2
-            MOV PROFIT2,AX
+            mov ax,word ptr gb1[bx+10];???
+            imul gb1[bx+14];ax=cost2
+            mov cost2,ax
+            mov ax,word ptr gb1[bx+12];???
+            imul gb1[bx+16]
+            sub ax,cost2;ax=profit2
+            mov profit2,ax
 
             mov dx,0
-            MOV AX,PROFIT1
-            IMUL AX,WORD PTR 10
+            mov ax,profit1
+            imul ax,word ptr 10
             cwd
-            IDIV COST1
+            idiv cost1
             mov word ptr ga1[bx+18],ax;将利润率存入内存
             mov dx,0
-            MOV AX,PROFIT2
-            IMUL AX,WORD PTR 10
+            mov ax,profit2
+            imul ax,word ptr 10
             cwd
-            IDIV COST2
+            idiv cost2
             mov word ptr ga2[bx+18],ax;将利润率存入内存
 
 next_goods:
