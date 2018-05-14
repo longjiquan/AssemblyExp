@@ -1,0 +1,8 @@
+#define BM_MAIN							1000
+#define BM_TOOLBAR						1001
+BM_MAIN					BITMAP DISCARDABLE Picture\Bitmap1.bmp
+BM_TOOLBAR				BITMAP DISCARDABLE Picture\Toolbar.bmp
+
+
+#include <Res\CBoxMnu.rc>
+#include <Res\CBoxDlg.rc>
